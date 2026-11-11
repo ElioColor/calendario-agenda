@@ -1,0 +1,17 @@
+{
+  "name": "Agenda",
+  "short_name": "Agenda",
+  "description": "Calendario con settimana a pagina d'agenda, collegato a Google Calendar.",
+  "lang": "it",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#17171a",
+  "theme_color": "#17171a",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
