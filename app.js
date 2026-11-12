@@ -5,7 +5,7 @@
 /* A ogni rilascio questo numero cambia insieme a data-v e ai ?v= di index.html.
    Se pagina e programma non coincidono (il telefono ne ha uno vecchio in memoria) l'app non parte:
    svuota la memoria dei file, ricarica una volta e, se non basta, lo dice invece di funzionare a metà. */
-var VERSION='3';
+var VERSION='4';
 var pageV=document.documentElement.getAttribute('data-v');
 if(pageV!==VERSION){
   var mark=VERSION+'|'+pageV,seen=null;
@@ -470,8 +470,8 @@ $('b-new').addEventListener('click',function(){openForm({day:S.view==='agenda'?T
 $('b-menu').addEventListener('click',function(){show('drawer');});
 
 /* ================= pannelli ================= */
-function show(id){['drawer','detail','formsheet'].forEach(function(x){$(x).hidden=x!==id;});$('scrim').hidden=false;}
-function closeAll(){['drawer','detail','formsheet','scrim'].forEach(function(x){$(x).hidden=true;});}
+function show(id){['drawer','detail','formsheet','cropsheet'].forEach(function(x){$(x).hidden=x!==id;});$('scrim').hidden=false;}
+function closeAll(){['drawer','detail','formsheet','cropsheet','scrim'].forEach(function(x){$(x).hidden=true;});}
 $('scrim').addEventListener('click',function(){if(!blocked())closeAll();});
 var toastT=0;
 function toast(msg){var t=$('toast');t.textContent=msg;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(function(){t.hidden=true;},2600);}
@@ -648,6 +648,77 @@ $('form').addEventListener('submit',function(ev){
     },function(err){toast(errMsg(err));refreshSync();}).then(function(){setBusy(false);});
   },function(){setBusy(false);});
 });
+
+/* ================= icona personale del tasto Oggi ================= */
+/* L'immagine scelta resta solo su questo telefono: viene ritagliata, rimpicciolita e salvata tra le preferenze. */
+var ICON=lsGet('cal-icona','')||'';
+function applyIcon(){
+  var on=!!ICON;
+  $('i-today').toggleAttribute('hidden',on);
+  $('img-today').hidden=!on;$('ic-prev').hidden=!on;$('ic-none').hidden=on;$('ic-clear').disabled=!on;
+  if(on){$('img-today').src=ICON;$('ic-prev').src=ICON;}
+}
+var C=null,CP={},pinch0=null,cropRaf=0;
+function cropScale(){return C.s0*C.z;}
+function paintCrop(cv){
+  var sc=cropScale(),g=cv.getContext('2d');
+  g.clearRect(0,0,cv.width,cv.height);g.imageSmoothingQuality='high';
+  g.drawImage($('crop-img'),-C.ox/sc,-C.oy/sc,C.D/sc,C.D/sc,0,0,cv.width,cv.height);
+}
+function drawCrop(){
+  if(!C)return;
+  var sc=cropScale(),im=$('crop-img');
+  C.ox=Math.min(0,Math.max(C.D-C.w*sc,C.ox));C.oy=Math.min(0,Math.max(C.D-C.h*sc,C.oy));
+  im.style.width=(C.w*sc)+'px';im.style.height=(C.h*sc)+'px';im.style.transform='translate('+C.ox+'px,'+C.oy+'px)';
+  if(!cropRaf)cropRaf=requestAnimationFrame(function(){cropRaf=0;if(C)try{paintCrop($('crop-prev'));}catch(err){}});
+}
+function setZoom(z){
+  if(!C)return;
+  var sc=cropScale(),cx=(C.D/2-C.ox)/sc,cy=(C.D/2-C.oy)/sc;     /* il punto al centro resta fermo mentre si ingrandisce */
+  C.z=Math.min(4,Math.max(1,z));sc=cropScale();
+  C.ox=C.D/2-cx*sc;C.oy=C.D/2-cy*sc;$('crop-z').value=C.z;drawCrop();
+}
+function endCrop(){if(C){try{URL.revokeObjectURL(C.url);}catch(err){}C=null;}CP={};pinch0=null;$('crop-img').removeAttribute('src');}
+$('ic-pick').addEventListener('click',function(){$('ic-file').value='';$('ic-file').click();});
+$('ic-clear').addEventListener('click',function(){ICON='';lsSet('cal-icona','');applyIcon();});
+$('ic-file').addEventListener('change',function(){
+  var f=this.files&&this.files[0];if(!f)return;
+  endCrop();
+  var url=URL.createObjectURL(f),im=$('crop-img');
+  im.onload=function(){
+    show('cropsheet');
+    var D=$('crop').clientWidth,w=im.naturalWidth,h=im.naturalHeight,s0=D/Math.min(w,h);
+    C={url:url,w:w,h:h,D:D,s0:s0,z:1,ox:(D-w*s0)/2,oy:(D-h*s0)/2};
+    $('crop-z').value=1;drawCrop();
+  };
+  im.onerror=function(){try{URL.revokeObjectURL(url);}catch(err){}toast('Non riesco ad aprire questa immagine');};
+  im.src=url;
+});
+$('crop-z').addEventListener('input',function(){setZoom(+this.value);});
+(function(){
+  var box=$('crop');
+  box.addEventListener('pointerdown',function(e){if(!C)return;try{box.setPointerCapture(e.pointerId);}catch(err){}CP[e.pointerId]={x:e.clientX,y:e.clientY};pinch0=null;});
+  box.addEventListener('pointermove',function(e){
+    var p=CP[e.pointerId];if(!p||!C)return;
+    var ids=Object.keys(CP);
+    if(ids.length===1){C.ox+=e.clientX-p.x;C.oy+=e.clientY-p.y;CP[e.pointerId]={x:e.clientX,y:e.clientY};drawCrop();return;}
+    CP[e.pointerId]={x:e.clientX,y:e.clientY};
+    var a=CP[ids[0]],b=CP[ids[1]],d=Math.hypot(a.x-b.x,a.y-b.y);
+    if(!pinch0)pinch0={d:d||1,z:C.z};else setZoom(pinch0.z*d/pinch0.d);
+  });
+  function up(e){delete CP[e.pointerId];pinch0=null;}
+  box.addEventListener('pointerup',up);box.addEventListener('pointercancel',up);
+})();
+$('crop-ok').addEventListener('click',function(){
+  if(!C)return;
+  var cv=document.createElement('canvas'),data='';cv.width=cv.height=192;
+  try{paintCrop(cv);data=cv.toDataURL('image/jpeg',.9);}catch(err){}
+  if(!data||data.length<100){toast('Non riesco a usare questa immagine');return;}
+  ICON=data;lsSet('cal-icona',ICON);applyIcon();endCrop();closeAll();
+  toast(lsGet('cal-icona','')===ICON?'Icona aggiornata':'Icona impostata, ma il telefono non ha potuto salvarla');
+});
+$('crop-no').addEventListener('click',function(){endCrop();closeAll();});
+applyIcon();
 
 /* ================= ricerca ================= */
 /* Mentre si scrive cerca negli eventi salvati sul telefono; su richiesta chiede a Google tutti gli anni. */

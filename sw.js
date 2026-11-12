@@ -1,8 +1,8 @@
 // Tiene in memoria i file dell'app, così si apre anche senza rete.
 // Strategia: prima la rete, chiedendo sempre al server se il file è cambiato (cache: 'no-cache'),
 // così pagina e programma arrivano sempre nella stessa versione; senza rete, la copia salvata.
-const CACHE = 'agenda-v3';
-const SHELL = ['./', 'index.html', 'app.css?v=3', 'app.js?v=3', 'config.js?v=3', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png'];
+const CACHE = 'agenda-v4';
+const SHELL = ['./', 'index.html', 'app.css?v=4', 'app.js?v=4', 'config.js?v=4', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(
