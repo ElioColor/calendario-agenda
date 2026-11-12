@@ -210,6 +210,24 @@ form .chk input{width:22px;height:22px;accent-color:var(--today)}
 .fonts button{text-align:left;padding:0 12px;font-size:17px}
 .seg button[aria-pressed="true"],.fonts button[aria-pressed="true"]{background:var(--today);color:var(--on-today);font-weight:500}
 
+/* ricerca */
+.search{position:absolute;inset:0;z-index:15;background:var(--cell);display:flex;flex-direction:column}
+.s-top{display:flex;align-items:center;gap:4px;background:var(--bar);border-bottom:1px solid var(--line);
+  padding:calc(6px + env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) 6px max(8px,env(safe-area-inset-left,0px))}
+.s-top input{flex:1;min-width:0;height:44px;background:var(--field);border:1px solid var(--line);border-radius:8px;padding:0 12px;font-size:17px;-webkit-user-select:text;user-select:text}
+.s-res{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding-bottom:calc(24px + env(safe-area-inset-bottom,0px))}
+.s-res h3{margin:0;padding:14px 14px 6px;font-size:12px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--fg-dim);position:sticky;top:0;background:var(--cell);z-index:1}
+.s-hint{margin:0;padding:18px 14px;font-size:15px;line-height:1.45;color:var(--mute)}
+.s-row{display:grid;grid-template-columns:98px minmax(0,1fr);gap:12px;width:100%;padding:8px 14px;align-items:start;border-top:1px solid var(--line)}
+.s-row .s-d b{display:block;font-size:15px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.s-row .s-d i{display:block;font-style:normal;font-size:13px;color:var(--fg-dim)}
+.s-row .s-t{min-width:0}
+.s-row .s-t b{display:block;font-size:17px;font-weight:500;color:var(--t);overflow-wrap:anywhere}
+.s-row .s-t b.bar{display:inline-block;max-width:100%;background:var(--c);color:var(--on);border-radius:2px;padding:1px 7px;font-weight:400;box-shadow:inset 0 0 0 1px rgb(0 0 0 / .16)}
+.s-row .s-t i{display:block;font-style:normal;font-size:13px;color:var(--mute);overflow-wrap:anywhere}
+.s-foot{display:grid;gap:10px;padding:16px 14px 0;border-top:1px solid var(--line)}
+.s-foot p{margin:0;font-size:14px;line-height:1.45;color:var(--mute)}
+
 /* accesso */
 .login{position:absolute;inset:0;z-index:25;background:var(--bar);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
   padding:24px max(24px,env(safe-area-inset-right,0px)) 24px max(24px,env(safe-area-inset-left,0px));text-align:center;overflow-y:auto}

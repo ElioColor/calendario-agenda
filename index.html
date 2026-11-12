@@ -18,6 +18,7 @@
   <header class="top">
     <button class="ib" id="b-menu" aria-label="Menu"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
     <div class="ttl" aria-live="polite"><b id="t1"></b><span id="t2"></span></div>
+    <button class="ib" id="b-search" aria-label="Cerca un evento"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5 5"/></svg></button>
     <button class="ib" id="b-new" aria-label="Nuovo evento"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
     <button class="ib" id="b-today" aria-label="Vai a oggi"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M8 3v4M16 3v4"/><circle cx="12" cy="15" r="1.6" fill="currentColor" stroke="none"/></svg></button>
   </header>
@@ -32,6 +33,14 @@
     <button data-view="day">Giorno</button>
     <button data-view="agenda">Agenda</button>
   </nav>
+
+  <section class="search" id="search" hidden>
+    <div class="s-top">
+      <button class="ib" id="s-back" aria-label="Chiudi la ricerca"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <input type="search" id="s-q" placeholder="Cerca un evento" autocomplete="off" enterkeyhint="search" aria-label="Testo da cercare">
+    </div>
+    <div class="s-res" id="s-res"></div>
+  </section>
 
   <div class="scrim" id="scrim" hidden></div>
 
@@ -59,6 +68,7 @@
       <p class="det-share" id="d-share" hidden></p>
     </div></div>
     <div class="acts" id="d-acts">
+      <button class="btn" id="d-goto">Vai al giorno</button>
       <button class="btn pri" id="d-edit">Modifica</button>
       <button class="btn" id="d-dup">Duplica</button>
       <button class="btn" id="d-share-btn">Condividi</button>
