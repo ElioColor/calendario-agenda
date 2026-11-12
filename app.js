@@ -1,6 +1,31 @@
 (function(){
 'use strict';
 
+/* ================= controllo di versione ================= */
+/* A ogni rilascio questo numero cambia insieme a data-v e ai ?v= di index.html.
+   Se pagina e programma non coincidono (il telefono ne ha uno vecchio in memoria) l'app non parte:
+   svuota la memoria dei file, ricarica una volta e, se non basta, lo dice invece di funzionare a metà. */
+var VERSION='3';
+var pageV=document.documentElement.getAttribute('data-v');
+if(pageV!==VERSION){
+  var mark=VERSION+'|'+pageV,seen=null;
+  try{seen=sessionStorage.getItem('cal-ricarica');}catch(err){}
+  var reload=function(){location.reload();};
+  var wipe=function(then){
+    try{if(navigator.serviceWorker)navigator.serviceWorker.getRegistration().then(function(r){if(r)r.update();},function(){});}catch(err){}
+    if(window.caches&&caches.keys)caches.keys().then(function(ks){return Promise.all(ks.map(function(k){return caches.delete(k);}));}).then(then,then);else then();
+  };
+  if(seen!==mark){
+    try{sessionStorage.setItem('cal-ricarica',mark);}catch(err){}
+    wipe(reload);
+  }else{
+    document.body.insertAdjacentHTML('beforeend','<div style="position:fixed;inset:0;z-index:99;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:24px;text-align:center;background:#17171a;color:#f3f1ec;font:17px/1.45 system-ui,sans-serif"><p style="margin:0;max-width:30ch">L\'app si sta aggiornando. Riprova tra un minuto.</p><button id="v-retry" style="min-height:46px;padding:0 22px;border:0;border-radius:8px;background:#f98d0c;color:#1c1203;font:500 16px system-ui,sans-serif">Riprova</button></div>');
+    document.getElementById('v-retry').addEventListener('click',function(){try{sessionStorage.removeItem('cal-ricarica');}catch(err){}wipe(reload);});
+  }
+  return;
+}
+try{sessionStorage.removeItem('cal-ricarica');}catch(err){}
+
 /* ================= costanti e utilità ================= */
 var CFG=window.CAL_CONFIG||{};
 var SCOPE_LIST=['https://www.googleapis.com/auth/calendar.calendarlist.readonly','https://www.googleapis.com/auth/calendar.events'];
@@ -739,5 +764,9 @@ idbOpen().then(function(){return idbGet('data');}).then(function(d){
   if(tokenOk())syncAll();
   if(document.fonts&&document.fonts.ready)document.fonts.ready.then(function(){render();});
 });
-if('serviceWorker' in navigator&&location.protocol==='https:'){navigator.serviceWorker.register('sw.js').catch(function(){});}
+if('serviceWorker' in navigator&&location.protocol==='https:'){
+  navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(function(reg){
+    document.addEventListener('visibilitychange',function(){if(!document.hidden)reg.update().catch(function(){});});
+  }).catch(function(){});
+}
 })();
